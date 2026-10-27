@@ -1,0 +1,50 @@
+1706.03762  Attention Is All You Need
+1810.04805  BERT
+1907.11692  RoBERTa
+1301.3781   Word2vec (Efficient Estimation of Word Representations)
+1310.4546   Word2vec (Distributed Representations of Words and Phrases)
+1409.0473   Bahdanau attention (NMT, Align and Translate)
+1409.3215   Sequence to Sequence Learning
+1508.04025  Luong attention (Effective Approaches to Attention-based NMT)
+1512.03385  ResNet
+1412.6980   Adam
+1602.04938  LIME
+2005.14165  GPT-3
+1910.13461  BART
+1912.08777  PEGASUS
+1910.10683  T5
+1908.10084  Sentence-BERT
+2004.05150  Longformer
+1704.04368  Pointer-Generator Networks
+1908.08345  Text Summarization with Pretrained Encoders
+1804.05685  Cohan et al., arXiv summarization dataset paper
+1909.11942  ALBERT
+1910.01108  DistilBERT
+2003.10555  ELECTRA
+1906.08237  XLNet
+1802.05365  ELMo (Deep Contextualized Word Representations)
+1405.4053   Doc2vec (Distributed Representations of Sentences and Documents)
+1607.04606  fastText (Enriching Word Vectors with Subword Information)
+1607.01759  Bag of Tricks for Efficient Text Classification
+1408.5882   CNNs for Sentence Classification
+1406.1078   Encoder-Decoder with GRU (Cho et al.)
+1503.02531  Distilling the Knowledge in a Neural Network
+1502.03167  Batch Normalization
+1409.1556   VGG
+1506.01497  Faster R-CNN
+1506.02640  YOLO
+1406.2661   Generative Adversarial Networks
+1312.6114   Variational Autoencoders
+2010.11929  Vision Transformer (ViT)
+2103.00020  CLIP
+2203.02155  InstructGPT
+2302.13971  LLaMA
+2307.09288  Llama 2
+2201.11903  Chain-of-Thought Prompting
+2005.11401  Retrieval-Augmented Generation
+2106.09685  LoRA
+1711.05101  AdamW (Decoupled Weight Decay)
+1606.05250  SQuAD
+1804.07461  GLUE
+2001.08361  Scaling Laws for Neural Language Models
+1705.03122  Convolutional Sequence to Sequence Learning

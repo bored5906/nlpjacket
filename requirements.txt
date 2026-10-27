@@ -1,0 +1,12 @@
+flask
+pymupdf
+nltk
+spacy
+scikit-learn
+pandas
+numpy
+matplotlib
+wordcloud
+networkx
+yake
+rouge-score

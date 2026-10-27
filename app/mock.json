@@ -1,0 +1,46 @@
+{
+  "paper_id": 1,
+  "title": "Paper 1: house mapping satellite",
+  "mode": "compare",
+  "length": "medium",
+  "summaries": {
+    "lead": "Sample lead-baseline text: the first few sentences of the paper.",
+    "tfidf": "Sample TF-IDF summary: sentences with the highest word-importance scores.",
+    "textrank": "Sample TextRank summary: the most central sentences in the similarity graph."
+  },
+  "insights": {
+    "objective": "We propose a method to map houses from satellite images.",
+    "method": "A convolutional model trained on labelled tiles.",
+    "findings": "Results show 92% accuracy on the test region.",
+    "limitations": "Performance drops on cloudy images."
+  },
+  "keywords": [
+    {"term": "satellite imagery", "score": 0.91},
+    {"term": "house mapping", "score": 0.74},
+    {"term": "deep learning", "score": 0.52},
+    {"term": "land use", "score": 0.31}
+  ],
+  "entities": {
+    "ORG": ["ISRO", "MIT"],
+    "PERSON": ["A. Sharma"],
+    "GPE": ["Rajasthan", "India"]
+  },
+  "sections": {
+    "abstract": "Short summary of the abstract section.",
+    "methods": "Short summary of the methods section.",
+    "results": "Short summary of the results section.",
+    "conclusion": "Short summary of the conclusion section."
+  },
+  "trace": [
+    {"stage": "PDF extraction", "ms": 120, "output_preview": "12 pages, 48,000 characters"},
+    {"stage": "Cleaning", "ms": 15, "output_preview": "Removed references and citations"},
+    {"stage": "Sentence tokenization", "ms": 40, "output_preview": "412 sentences"},
+    {"stage": "Preprocessing", "ms": 310, "output_preview": "lowercase, stop-words removed, lemmatized"},
+    {"stage": "TF-IDF + TextRank", "ms": 220, "output_preview": "10 sentences selected"}
+  ],
+  "evaluation": {
+    "lead": {"rouge1": 0.28, "rouge2": 0.06, "rougeL": 0.18, "compression": "6%"},
+    "tfidf": {"rouge1": 0.31, "rouge2": 0.08, "rougeL": 0.20, "compression": "6%"},
+    "textrank": {"rouge1": 0.33, "rouge2": 0.09, "rougeL": 0.22, "compression": "6%"}
+  }
+}
