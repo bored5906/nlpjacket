@@ -4,7 +4,6 @@ from collections import Counter
 import spacy
 import yake
 
-
 # Load the English NLP model once and reuse it across requests.
 nlp = spacy.load("en_core_web_sm")
 
@@ -17,11 +16,11 @@ BAD = re.compile(r"@xmath|\$|\[|\]|_|\+|\d{5,}")
 ENTITY_NOISE = {
     "eq", "svm", "f1", "rbf", "rp", "lime", "linear", "recall",
     "non-zero", "bayesian", "acoustic", "magenta", "n", "n.",
-    "w", "christianity", "wolf",
+    "w", "christianity", "wolf", "lasso", "explainer", "classifier"
 }
 
-# Mathematical symbols and formula fragments.
-FORMULA_NOISE = re.compile(r"[Ωω∑√≈≠≤≥×÷=<>%$@{}\[\]_^()]")
+# Added Greek letters commonly used in variables (e.g., width σ, alpha)
+FORMULA_NOISE = re.compile(r"[Ωω∑√≈≠≤≥×÷=<>%$@{}\[\]_^()α-ωΑ-Ωσ]")
 
 # Common paper artefacts incorrectly identified as entities.
 PAPER_ARTEFACT = re.compile(
@@ -123,9 +122,9 @@ def _is_valid_entity(raw_entity, label):
     if re.search(r"\d{2,}", name):
         return False
 
-    # Reject malformed spans mixing a person's name with an institution.
+    # FIX: Vigorously reject algorithmic and mathematical terms from being tagged as people
     if label == "PERSON" and re.search(
-        r"\b(university|institute|college|laboratory|department)\b",
+        r"\b(explainer|model|algorithm|lasso|regression|classifier|width|height|loss|accuracy|data|dataset|framework|metric|university|institute|college|laboratory|department)\b",
         name,
         re.IGNORECASE,
     ):

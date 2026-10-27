@@ -1,5 +1,5 @@
-// ============ 1. CONFIG (flip USE_MOCK to false when Flask is ready) ============
-const CONFIG = { USE_MOCK: false, API: "/api", MOCK_URL: "/static/mock.json", MAX_HISTORY: 500 };
+// ============ 1. CONFIG ============
+const CONFIG = { USE_MOCK: false, API: "/api", MAX_HISTORY: 500 };
 
 // ============ 2. HELPERS ============
 const $ = id => document.getElementById(id);
@@ -10,17 +10,16 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
 
-// ============ 3. STATE (the screen is always drawn from this) ============
+// ============ 3. STATE ============
 const S = {
   tabs: [], active: null, nextId: 1, resultTab: "summary",
   history: store.get("pl_history", []),
-  settings: store.get("pl_settings", { mode: "accurate", length: "medium", theme: "light" })
+  settings: store.get("pl_settings", { mode: "compare", length: "medium", theme: "light" })
 };
 
-// ============ 4. API LAYER (only place that talks to the backend) ============
+// ============ 4. API LAYER ============
 const api = {
   async process(tab, options) {
-    if (CONFIG.USE_MOCK) { await sleep(900); return (await fetch(CONFIG.MOCK_URL)).json(); }
     const fd = new FormData();
     if (tab.file) fd.append("file", tab.file); else fd.append("arxiv", tab.arxiv);
     fd.append("options", JSON.stringify(options));
@@ -28,14 +27,13 @@ const api = {
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Server error " + res.status);
     return res.json();
   }
-  // later: papers(), paper(id), history(), settings(), status(jobId)
 };
 
-// ============ 5. RESULT RENDERERS (add a new result tab = add one line here) ============
+// ============ 5. RESULT RENDERERS ============
 const bars = (rows, max) => rows.map(([name, v]) =>
   `<div class="bar-row"><span>${esc(name)}</span><div class="bar"><i style="width:${Math.min(100, v / max * 100)}%"></i></div><span>${(+v).toFixed(2)}</span></div>`).join("");
 const card = (title, body) => `<div class="rcard"><h3>${esc(title)}</h3>${body}</div>`;
-const NAMES = { lead: "Lead baseline", tfidf: "TF-IDF", textrank: "TextRank" };
+const NAMES = { lead: "Lead baseline", "TF-IDF": "TF-IDF", "TextRank": "TextRank" };
 
 const RENDERERS = {
   summary: { label: "Summary", render: r => `<div class="cols">${Object.entries(r.summaries || {}).map(
@@ -48,14 +46,21 @@ const RENDERERS = {
   sections: { label: "Sections", render: r => Object.entries(r.sections || {}).map(([k, t]) => card(k, `<p>${esc(t)}</p>`)).join("") },
   trace: { label: "Pipeline trace", render: r => `<table><tr><th>Stage</th><th>Time (ms)</th><th>Output preview</th></tr>${(r.trace || []).map(
     t => `<tr><td>${esc(t.stage)}</td><td>${esc(t.ms)}</td><td>${esc(t.output_preview)}</td></tr>`).join("")}</table>` },
+  
+  // Updated Evaluation Tab: Now renders comparison table and the dynamically generated graph
   evaluation: { label: "Evaluation", render: r => {
     const ev = r.evaluation || {};
-    return `<table><tr><th>Method</th><th>ROUGE-1</th><th>ROUGE-2</th><th>ROUGE-L</th><th>Compression</th></tr>${Object.entries(ev).map(
-      ([m, v]) => `<tr><td>${esc(NAMES[m] || m)}</td><td>${v.rouge1}</td><td>${v.rouge2}</td><td>${v.rougeL}</td><td>${esc(v.compression ?? "-")}</td></tr>`).join("")}</table>
-      <p class="muted" style="margin-top:10px">ROUGE F1 against the paper's own abstract.</p>`; } }
+    const ts = new Date().getTime(); // Cache buster to force image reload on new processing
+    return `<table><tr><th>Method</th><th>ROUGE-1</th><th>ROUGE-2</th><th>ROUGE-L</th></tr>${Object.entries(ev).map(
+      ([m, v]) => `<tr><td><strong>${esc(NAMES[m] || m)}</strong></td><td>${v['ROUGE-1']}</td><td>${v['ROUGE-2']}</td><td>${v['ROUGE-L']}</td></tr>`).join("")}</table>
+      <div style="margin-top: 25px; text-align: center; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eaeaea;">
+        <h4 style="margin-bottom: 10px;">Visual Comparison</h4>
+        <img src="/results/graphs/rouge_comparison.png?t=${ts}" onerror="this.style.display='none'" alt="ROUGE Comparison Graph" style="max-width: 100%; height: auto;"/>
+      </div>
+      <p class="muted" style="margin-top:10px">ROUGE F1 scores evaluated against the paper's original abstract.</p>`; } }
 };
 
-// ============ 6. TABS (one tab = one paper) ============
+// ============ 6. TABS ============
 const activeTab = () => S.tabs.find(t => t.id === S.active);
 function addTab() {
   const id = S.nextId++;
@@ -141,7 +146,7 @@ function renderResults() {
 }
 $("rtabs").addEventListener("click", e => { if (e.target.dataset.r) { S.resultTab = e.target.dataset.r; renderResults(); } });
 
-// ============ 10. HISTORY (audit log) ============
+// ============ 10. HISTORY (Local memory only) ============
 function log(event, detail, outcome = "ok", ms = "") {
   S.history.unshift({ time: new Date().toLocaleString(), event, detail, outcome, ms });
   S.history = S.history.slice(0, CONFIG.MAX_HISTORY); store.set("pl_history", S.history); renderHistory();
@@ -168,6 +173,6 @@ document.querySelectorAll(".nav-link").forEach(btn => btn.addEventListener("clic
 
 // ============ 12. START ============
 function renderAll() { renderTabs(); renderInput(); renderResults(); }
-document.querySelector(`input[name="mode"][value="${S.settings.mode}"]`).checked = true;
-document.querySelector(`input[name="length"][value="${S.settings.length}"]`).checked = true;
+document.querySelector(`input[name="mode"][value="${S.settings.mode}"]`) ? document.querySelector(`input[name="mode"][value="${S.settings.mode}"]`).checked = true : null;
+document.querySelector(`input[name="length"][value="${S.settings.length}"]`) ? document.querySelector(`input[name="length"][value="${S.settings.length}"]`).checked = true : null;
 applySettings(); renderHistory(); addTab();

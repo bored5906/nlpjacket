@@ -11,14 +11,12 @@ STOP = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 stemmer = PorterStemmer()
 
-
 def extract_text(pdf_path):
     """Read every page of a PDF and join the text."""
     doc = fitz.open(pdf_path)
     pages = [page.get_text() for page in doc]
     doc.close()
     return "\n".join(pages)
-
 
 def clean_text(text):
     """Remove noise so only the paper's real sentences remain."""
@@ -33,19 +31,18 @@ def clean_text(text):
     text = re.sub(r"\s{2,}", " ", text)                     # collapse extra spaces
     return text.strip()
 
-
 def split_sentences(text):
-    """Split into sentences, dropping short fragments and symbol-heavy (formula) sentences."""
+    """Split into sentences, dropping short fragments but preserving math/symbol-heavy sentences."""
     kept = []
     for s in sent_tokenize(text):
         words = s.split()
-        if len(words) < 5:
+        if len(words) < 3:  # Lowered from 5 to 3 to keep short valid sentences
             continue
-        real = sum(w.strip(".,;:()[]$_").isalpha() for w in words)   # words made of letters
-        if real / len(words) >= 0.7:
+        real = sum(w.strip(".,;:()[]$_").isalpha() for w in words)
+        # Relaxed threshold from 0.7 to 0.4 so valid equations/data points aren't destroyed
+        if real / len(words) >= 0.4:
             kept.append(s)
     return kept
-
 
 def preprocess_sentence(sentence, method="lemma"):
     """Lowercase, tokenize, remove stop-words, then lemmatize or stem."""
@@ -54,7 +51,6 @@ def preprocess_sentence(sentence, method="lemma"):
     if method == "stem":
         return [stemmer.stem(t) for t in tokens]
     return [lemmatizer.lemmatize(t) for t in tokens]
-
 
 def fetch_arxiv_pdf(id_or_url, save_dir="uploads"):
     """Download an arXiv paper as a PDF. Accepts '2301.12345' or a full arxiv.org link."""

@@ -1,6 +1,7 @@
 import time
+import os
 
-from src.evaluation import evaluate_summary
+from src.evaluation import evaluate_multiple_models
 from src.insights import extract_entities, extract_keywords, key_insights
 from src.model import summarize
 from src.preprocessing import clean_text, extract_text, preprocess_sentence, split_sentences
@@ -10,9 +11,9 @@ MODES = {"fast", "accurate", "compare"}
 LENGTHS = {"short", "medium", "long"}
 NORMS = {"lemma", "stem"}
 
-
-def run_pipeline(pdf_path, mode="accurate", length="medium", normalization="lemma", ngram="1-2"):
+def run_pipeline(pdf_path, mode="compare", length="medium", normalization="lemma", ngram="1-2"):
     """Run all stages on one PDF. Returns a dict shaped like app/static/mock.json."""
+    
     if mode not in MODES or length not in LENGTHS or normalization not in NORMS:
         raise ValueError("Invalid option value.")
     trace = []
@@ -32,7 +33,16 @@ def run_pipeline(pdf_path, mode="accurate", length="medium", normalization="lemm
     sections = detect_sections(raw)
     abstract = sections.get("abstract", "")
     has_reference = 40 <= len(abstract.split()) <= 400
-    body = raw.replace(abstract, "", 1) if has_reference else raw
+    
+    # FIX: Construct body ONLY from valid sections to block out title/authors/emails metadata
+    if sections:
+        body = " ".join(text for name, text in sections.items() if name != "references")
+        # Fallback if section parser failed to grab enough text
+        if not body.strip():
+            body = raw.replace(abstract, "", 1) if has_reference else raw
+    else:
+        body = raw
+        
     mark("Section detection", t, ", ".join(sections) or "no headings found")
 
     # 3. clean + sentences
@@ -50,8 +60,8 @@ def run_pipeline(pdf_path, mode="accurate", length="medium", normalization="lemm
 
     # 5. summaries
     t = time.perf_counter()
-    summaries = summarize(sentences, mode, length, normalization)
-    mark(f"Summarization ({mode})", t, ", ".join(f"{k}: {len(v.split())} words" for k, v in summaries.items()))
+    summaries = summarize(sentences, "compare", length, normalization)
+    mark(f"Summarization (compare)", t, ", ".join(f"{k}: {len(v.split())} words" for k, v in summaries.items()))
 
     # 6. keywords, entities, insights, section summaries
     t = time.perf_counter()
@@ -71,13 +81,12 @@ def run_pipeline(pdf_path, mode="accurate", length="medium", normalization="lemm
     evaluation = {}
     if has_reference:
         t = time.perf_counter()
-        words = len(text.split())
-        evaluation = {name: evaluate_summary(s, abstract, words) for name, s in summaries.items()}
+        evaluation = evaluate_multiple_models(abstract, summaries, output_dir="results")
         mark("ROUGE evaluation", t, f"scored {len(evaluation)} methods vs the abstract")
 
     return {
         "title": " ".join(k["term"] for k in keywords[:2]) or "untitled",
-        "mode": mode,
+        "mode": "compare",
         "length": length,
         "summaries": summaries,
         "insights": insights,

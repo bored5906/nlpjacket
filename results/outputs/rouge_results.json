@@ -1,22 +1,17 @@
 {
-  "papers_used": 50,
-  "length": "medium",
-  "method": "lemma",
-  "averages": {
     "lead": {
-      "rouge1": 0.371,
-      "rouge2": 0.112,
-      "rougeL": 0.187
+        "ROUGE-1": 0.4931,
+        "ROUGE-2": 0.4907,
+        "ROUGE-L": 0.4931
     },
     "tfidf": {
-      "rouge1": 0.3,
-      "rouge2": 0.059,
-      "rougeL": 0.158
+        "ROUGE-1": 0.2588,
+        "ROUGE-2": 0.0473,
+        "ROUGE-L": 0.1035
     },
     "textrank": {
-      "rouge1": 0.412,
-      "rouge2": 0.155,
-      "rougeL": 0.223
+        "ROUGE-1": 0.3432,
+        "ROUGE-2": 0.2115,
+        "ROUGE-L": 0.1739
     }
-  }
 }
