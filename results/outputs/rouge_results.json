@@ -1,17 +1,17 @@
 {
     "lead": {
-        "ROUGE-1": 0.4931,
-        "ROUGE-2": 0.4907,
-        "ROUGE-L": 0.4931
+        "ROUGE-1": 0.7871,
+        "ROUGE-2": 0.7828,
+        "ROUGE-L": 0.7871
     },
     "tfidf": {
-        "ROUGE-1": 0.2588,
-        "ROUGE-2": 0.0473,
-        "ROUGE-L": 0.1035
+        "ROUGE-1": 0.3665,
+        "ROUGE-2": 0.075,
+        "ROUGE-L": 0.1495
     },
     "textrank": {
-        "ROUGE-1": 0.3432,
-        "ROUGE-2": 0.2115,
-        "ROUGE-L": 0.1739
+        "ROUGE-1": 0.4286,
+        "ROUGE-2": 0.1756,
+        "ROUGE-L": 0.2179
     }
 }

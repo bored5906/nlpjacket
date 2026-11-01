@@ -1,7 +1,7 @@
 import os
 import re
 
-import fitz                      # PyMuPDF, reads PDFs
+import pymupdf as fitz              # PyMuPDF, reads PDFs
 import requests
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer, PorterStemmer
@@ -22,6 +22,7 @@ def clean_text(text):
     """Remove noise so only the paper's real sentences remain."""
     text = re.sub(r"-\n(\w)", r"\1", text)                  # fix words split by hyphen at line end
     text = re.sub(r"@xmath\d*|@xcite", "", text)            # dataset placeholder tokens
+    text = re.sub(r"arXiv:\d+\.\d+v?\d*(?:\s*\[.*?\])?(?:\s*\d+\s*[A-Za-z]+\s*\d{4})?", "", text, flags=re.I)  # strip arXiv stamp
     matches = list(re.finditer(r"\n\s*(references|bibliography)\s*\n", text, re.I))
     if matches:
         text = text[:matches[-1].start()]                   # cut everything after the last "References"

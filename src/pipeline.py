@@ -34,7 +34,7 @@ def run_pipeline(pdf_path, mode="compare", length="medium", normalization="lemma
     abstract = sections.get("abstract", "")
     has_reference = 40 <= len(abstract.split()) <= 400
     
-    # FIX: Construct body ONLY from valid sections to block out title/authors/emails metadata
+    # Construct body ONLY from valid sections to block out title/authors/emails metadata
     if sections:
         body = " ".join(text for name, text in sections.items() if name != "references")
         # Fallback if section parser failed to grab enough text
@@ -58,10 +58,10 @@ def run_pipeline(pdf_path, mode="compare", length="medium", normalization="lemma
     sample = preprocess_sentence(sentences[min(5, len(sentences) - 1)], normalization)
     mark(f"Preprocessing ({normalization})", t, ", ".join(sample[:8]))
 
-    # 5. summaries
+    # 5. summaries (respect chosen mode)
     t = time.perf_counter()
-    summaries = summarize(sentences, "compare", length, normalization)
-    mark(f"Summarization (compare)", t, ", ".join(f"{k}: {len(v.split())} words" for k, v in summaries.items()))
+    summaries = summarize(sentences, mode, length, normalization)
+    mark(f"Summarization ({mode})", t, ", ".join(f"{k}: {len(v.split())} words" for k, v in summaries.items()))
 
     # 6. keywords, entities, insights, section summaries
     t = time.perf_counter()
@@ -84,9 +84,15 @@ def run_pipeline(pdf_path, mode="compare", length="medium", normalization="lemma
         evaluation = evaluate_multiple_models(abstract, summaries, output_dir="results")
         mark("ROUGE evaluation", t, f"scored {len(evaluation)} methods vs the abstract")
 
+    # Derive a clean title from file name if available, else keywords
+    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    if "_" in base_name and len(base_name.split("_")[0]) == 8:
+        base_name = base_name.split("_", 1)[1]
+    paper_title = base_name.replace("_", " ").title() if base_name and base_name not in ("unknown", "") else (" ".join(k["term"] for k in keywords[:2]) or "untitled")
+
     return {
-        "title": " ".join(k["term"] for k in keywords[:2]) or "untitled",
-        "mode": "compare",
+        "title": paper_title,
+        "mode": mode,
         "length": length,
         "summaries": summaries,
         "insights": insights,
